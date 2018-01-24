@@ -3,9 +3,13 @@ package zhou.demo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Spannable;
+import android.text.method.BaseMovementMethod;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.RichText;
@@ -90,9 +94,45 @@ public class MainActivity extends AppCompatActivity {
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃";
-        textView1.setMovementMethod(new ScrollingMovementMethod());
+        textView1.setMovementMethod(new BaseMovementMethod() {
 
-        RichText.from("<h4>@<del>bennyhuo</del></h4>\n<div class=\"highlight highlight-source-Kotlin\"><pre><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n        println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>HelloWorlda<span class=\"pl-pds\">\"</span></span>)\n}</pre></div>").into(textView1);
+
+//            float lastX = 0;
+//
+            @Override
+            public boolean onTouchEvent(TextView widget, Spannable text, MotionEvent event) {
+                Log.d(TAG, "onTouchEvent()  text = [" + text + "], event = [" + event + "]");
+//                switch (event.getAction()){
+//                    case MotionEvent.ACTION_DOWN: {
+//                        lastX = event.getRawX();
+//                    }
+//                    break;
+//                    case MotionEvent.ACTION_MOVE: {
+//                        float thisX = event.getRawX();
+//                        float offsetX = thisX - lastX;
+//                        Log.d(TAG, "onTouchEvent() move " + offsetX);
+//                        widget.scrollBy((int) offsetX, 0);
+//                        lastX = thisX;
+//                    }
+//                    break;
+//                }
+//
+                return super.onTouchEvent(widget, text, event);
+            }
+//
+            @Override
+            public boolean onGenericMotionEvent(TextView widget, Spannable text, MotionEvent event) {
+                Log.d(TAG, "onGenericMotionEvent() called with: widget = [" + widget + "], text = [" + text + "], event = [" + event + "]");
+                return super.onGenericMotionEvent(widget, text, event);
+            }
+//
+//            @Override
+//            public boolean canSelectArbitrarily() {
+//                return false;
+//            }
+        });
+
+        RichText.from("<h4>@<del>bennyhuo</del></h4>\n<div class=\"highlight highlight-source-Kotlin\"><pre><span class=\"pl-k\">fun</span> <span class=\"pl-en\" style=\"color: red\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n        println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>Hello2asdfasdfalsdjflkjasldjflasjdlfjalsjdflkjsdljflajsldfjlk<span class=\"pl-pds\">\"</span></span>)\n}</pre></div>").into(textView1);
 //        RichText.fromHtml("<![CDATA[ a\n\nb\nc\n ]]>").into(textView);
 
         final TextView textView2 = findViewById(R.id.text2);

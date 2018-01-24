@@ -4,11 +4,17 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.text.TextPaint;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.LineHeightSpan;
 import android.text.style.ReplacementSpan;
 import android.util.Log;
 
+import org.xml.sax.Attributes;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 /**
@@ -40,15 +46,27 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
     private int mTextColor;
     private int start;
     private int end;
+    private Attributes attributes;
+    private ArrayList<SpanInfo> spanInfos;
+
+    private Comparator<SpanInfo> spanInfoComparator = new Comparator<SpanInfo>() {
+        @Override
+        public int compare(SpanInfo o1, SpanInfo o2) {
+            return o1.start - o2.start;
+        }
+    };
 
     private int singleLineHeight;
 
     private HashMap<Integer, ArrayList<LineRange>> lineRangesMap = new HashMap();
 
-    public HtmlCodeBlockSpan(int width, int backgroundColor, int textColor, int start, int end) {
+    public HtmlCodeBlockSpan(int width, int backgroundColor, int textColor, int start, int end, Attributes attributes, ArrayList<SpanInfo> spanInfos) {
         mWidth = width;
         this.start = start;
         this.end = end;
+        this.attributes = attributes;
+        this.spanInfos = spanInfos;
+        Collections.sort(this.spanInfos, spanInfoComparator);
         GradientDrawable g = new GradientDrawable();
         g.setColor(backgroundColor);
         //g.setCornerRadius(RADIUS);
@@ -69,16 +87,60 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
         return mWidth;
     }
 
+    private TextPaint textPaint = new TextPaint();
+
     @Override
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
         float size = paint.getTextSize();
         int color = paint.getColor();
 
         paint.setTextSize(size * TEXT_SIZE_SCALE);
-        paint.setColor(mTextColor);
+        //paint.setColor(mTextColor);
         paint.setTypeface(Typeface.MONOSPACE);
 
-        mBackground.setBounds((int) x, top, (int) x + mWidth, bottom + PADDING);
+        drawBackground(canvas, start, end, (int) x, top, bottom);
+
+        textPaint.set(paint);
+        ArrayList<LineRange> lineRanges = lineRangesMap.get(start);
+        for (int i = 0; i < lineRanges.size(); i++) {
+            LineRange lineRange = lineRanges.get(i);
+            ArrayList<SpanInfo> filteredSpanInfos = new ArrayList<>();
+            for (SpanInfo spanInfo : spanInfos) {
+                if (spanInfo.start >= lineRange.start && spanInfo.end <= lineRange.end) {
+                    filteredSpanInfos.add(spanInfo);
+                }
+            }
+            int lastEnd;
+            if(filteredSpanInfos.isEmpty()){
+                lastEnd = lineRange.end;
+            } else {
+                lastEnd = filteredSpanInfos.get(0).start;
+            }
+            canvas.drawText(text, lineRange.start, lastEnd, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+            x += paint.measureText(text, lineRange.start, lastEnd);
+            for (SpanInfo filteredSpanInfo : filteredSpanInfos) {
+                if(filteredSpanInfo.span instanceof ForegroundColorSpan){
+                    if(lastEnd < filteredSpanInfo.start){
+                        canvas.drawText(text, lastEnd, filteredSpanInfo.start, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                        x += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
+                    }
+                    ((ForegroundColorSpan) filteredSpanInfo.span).updateDrawState(textPaint);
+                    canvas.drawText(text, filteredSpanInfo.start, filteredSpanInfo.end, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                    x += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
+                    lastEnd = filteredSpanInfo.end;
+                }
+            }
+            if (lastEnd < lineRange.end){
+                canvas.drawText(text, lastEnd, lineRange.end, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+            }
+        }
+
+        paint.setTextSize(size);
+        paint.setColor(color);
+    }
+
+    private void drawBackground(Canvas canvas, int start, int end, int x, int top, int bottom) {
+        mBackground.setBounds(x, top, x + mWidth, bottom + PADDING);
         if(this.start == start) {
             mBackground.setCornerRadii(RADIUS_START);
         } else if(this.end == end){
@@ -87,14 +149,6 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
             mBackground.setCornerRadius(0);
         }
         mBackground.draw(canvas);
-
-        ArrayList<LineRange> lineRanges = lineRangesMap.get(start);
-        for (int i = 0; i < lineRanges.size(); i++) {
-            canvas.drawText(text, lineRanges.get(i).start, lineRanges.get(i).end, x + PADDING, y + i * singleLineHeight + PADDING, paint);
-        }
-
-        paint.setTextSize(size);
-        paint.setColor(color);
     }
 
     @Override
@@ -163,6 +217,18 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
                     "start=" + start +
                     ", end=" + end +
                     '}';
+        }
+    }
+
+    public static class SpanInfo {
+        public final Object span;
+        public final int start;
+        public final int end;
+
+        public SpanInfo(Object span, int start, int end) {
+            this.span = span;
+            this.start = start;
+            this.end = end;
         }
     }
 }

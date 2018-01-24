@@ -3,6 +3,7 @@ package com.zzhoujay.richtext.ext;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.Spanned;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.pixplicity.htmlcompat.HtmlCompat;
@@ -12,6 +13,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.XMLReader;
 
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.Stack;
 
 /**
@@ -20,8 +22,8 @@ import java.util.Stack;
  */
 public class HtmlTagHandler implements HtmlCompat.TagHandler {
 
-    private static final int code_color = Color.parseColor("#F0F0F0");
-    private static final int code_background_color = Color.parseColor("#000000");
+    private static final int code_color = Color.parseColor("#000000");
+    private static final int code_background_color = Color.parseColor("#555555");
     private static final int h1_color = Color.parseColor("#333333");
 
 
@@ -48,7 +50,7 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
             } else {
                 len = stack.pop();
             }
-            reallyHandler(len, output.length(), tag.toLowerCase(), output, xmlReader);
+            reallyHandler(len, output.length(), tag.toLowerCase(), output, attributes, xmlReader);
         }
     }
 
@@ -69,11 +71,17 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
     }
 
     @SuppressWarnings("unused")
-    private void reallyHandler(int start, int end, String tag, Editable out, XMLReader reader) {
+    private void reallyHandler(int start, int end, String tag, Editable out, Attributes attributes, XMLReader reader) {
         switch (tag.toLowerCase()) {
             case "code":
             case "pre":
-                HtmlCodeBlockSpan cs = new HtmlCodeBlockSpan(getTextViewRealWidth(), code_background_color, code_color, start, end);
+                Object[] spans = out.getSpans(start, end, Object.class);
+                ArrayList<HtmlCodeBlockSpan.SpanInfo> spanInfos = new ArrayList<>(spans.length);
+                for (Object span : spans) {
+                    Log.d("span", span.toString());
+                    spanInfos.add(new HtmlCodeBlockSpan.SpanInfo(span, out.getSpanStart(span), out.getSpanEnd(span)));
+                }
+                HtmlCodeBlockSpan cs = new HtmlCodeBlockSpan(getTextViewRealWidth(), code_background_color, code_color, start, end, attributes, spanInfos);
                 out.setSpan(cs, start, end, Spanned.SPAN_PARAGRAPH);
                 break;
             case "ol":
