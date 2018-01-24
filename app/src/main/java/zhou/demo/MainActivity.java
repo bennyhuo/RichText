@@ -3,11 +3,11 @@ package zhou.demo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.zzhoujay.richtext.CacheType;
 import com.zzhoujay.richtext.RichText;
 
 //import com.zzhoujay.okhttpimagedownloader.OkHttpImageDownloader;
@@ -83,18 +83,27 @@ public class MainActivity extends AppCompatActivity {
         RichText.initCacheDir(this);
         RichText.debugMode = true;
 
-        final TextView textView = (TextView) findViewById(R.id.text);
+        final TextView textView1 = findViewById(R.id.text);
 
         String test_text_2 = "<p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃";
+        textView1.setMovementMethod(new ScrollingMovementMethod());
 
-        RichText.from("").into(textView);
+        RichText.from("<h4>@<del>bennyhuo</del></h4>\n<div class=\"highlight highlight-source-Kotlin\"><pre><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n        println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>HelloWorlda<span class=\"pl-pds\">\"</span></span>)\n}</pre></div>").into(textView1);
+//        RichText.fromHtml("<![CDATA[ a\n\nb\nc\n ]]>").into(textView);
 
-        RichText.from(test_text_2).showBorder(true)
-                .cache(CacheType.all).into(textView);
+        final TextView textView2 = findViewById(R.id.text2);
+        textView2.setMovementMethod(new ScrollingMovementMethod());
+        RichText.fromMarkdown("@bennyhuo\n```kotlin\n" +
+                "fun main(args: Array<String>){\n" +
+                "\tprintln(\"Hello2asdfasdfalsdjflkjasldjflasjdlfjalsjdflkjsdljflajsldfjlk\")\n" +
+                "}\n" +
+                "```").into(textView2);
+//        RichText.from(test_text_2).showBorder(true)
+//                .cache(CacheType.all).into(textView);
 
     }
 
