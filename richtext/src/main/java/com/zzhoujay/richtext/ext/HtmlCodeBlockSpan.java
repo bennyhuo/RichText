@@ -58,7 +58,6 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
-        Log.w(TAG, "getSize() text = [" + text.subSequence(start, end) + "], fm = [" + fm + "]");
         float size = paint.getTextSize();
         paint.setTextSize(size * TEXT_SIZE_SCALE);
         paint.setTypeface(Typeface.MONOSPACE);
@@ -72,7 +71,6 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
-        Log.i(TAG, "draw: text = " + text.subSequence(start, end)  + ", x = [" + x + "], top = [" + top + "], y = [" + y + "], bottom = [" + bottom + "]");
         float size = paint.getTextSize();
         int color = paint.getColor();
 
@@ -92,7 +90,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
         ArrayList<LineRange> lineRanges = lineRangesMap.get(start);
         for (int i = 0; i < lineRanges.size(); i++) {
-            canvas.drawText(text, lineRanges.get(i).start, lineRanges.get(i).end, x + PADDING * 2, y + i * singleLineHeight + PADDING, paint);
+            canvas.drawText(text, lineRanges.get(i).start, lineRanges.get(i).end, x + PADDING, y + i * singleLineHeight + PADDING, paint);
         }
 
         paint.setTextSize(size);
@@ -101,7 +99,6 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public void chooseHeight(CharSequence text, int start, int end, int spanstartv, int v, Paint.FontMetricsInt fm) {
-        Log.e(TAG, "| chooseHeight: text = " + text.subSequence(start, end) + ", spanstartv = [" + spanstartv + "], v = [" + v + "], fm = [" + fm + "]");
         if(singleLineHeight == 0){
             singleLineHeight = fm.bottom - fm.top;
         }
@@ -111,7 +108,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     private int getTextInLineLen(CharSequence text, int start, int end, Paint paint) {
         int e = start;
-        while (paint.measureText(text, start, e) < mWidth - PADDING * 2) {
+        while (paint.measureText(text, start, e) <= mWidth - PADDING * 2) {
             e++;
             if (e > end) {
                 break;
