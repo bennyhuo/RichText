@@ -1,21 +1,18 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def version_code = 3
-def version_name = "1.0.2"
+def version_code = 18
+def version_name = '1.0.5'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "26.0.1"
 
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 26
         versionCode version_code
         versionName version_name
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
     buildTypes {
         release {
@@ -29,23 +26,26 @@ android {
 }
 
 dependencies {
-    compile 'com.squareup.okhttp3:okhttp:3.7.0'
-    compile project(':richtext')
-//    compile 'com.zzhoujay.richtext:richtext:3.0.1'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
 }
+
 
 publish {
 
     Properties properties = new Properties()
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    //bintray.com用户名
     userOrg = properties.getProperty("bintray.user")
-    groupId = "com.zzhoujay.okhttpimagedownloader"
-    artifactId = 'OkHttpImageDownloader'
+    //jcenter上的路径
+    groupId = "com.zzhoujay.markdown"
+    //项目名称
+    artifactId = 'markdown'
+    //版本号
     publishVersion = version_name
-    desc = '使用okhttp实现的图片下载器'
-    website = 'https://github.com/zzhoujay/RichTex'
-
-    bintrayUser=properties.getProperty("bintray.user")
-    bintrayKey=properties.getProperty("bintray.key")
+    //描述，不重要
+    desc = 'Android平台原生Markdown解析器'
+    //网站，不重要
+    website = 'https://github.com/zzhoujay/Markdown'
 
 }

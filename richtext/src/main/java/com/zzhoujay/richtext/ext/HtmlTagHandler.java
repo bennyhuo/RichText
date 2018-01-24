@@ -2,13 +2,13 @@ package com.zzhoujay.richtext.ext;
 
 import android.graphics.Color;
 import android.text.Editable;
-import android.text.Html;
 import android.text.Spanned;
 import android.widget.TextView;
 
-import com.zzhoujay.markdown.style.CodeSpan;
+import com.pixplicity.htmlcompat.HtmlCompat;
 import com.zzhoujay.markdown.style.MarkDownBulletSpan;
 
+import org.xml.sax.Attributes;
 import org.xml.sax.XMLReader;
 
 import java.lang.ref.SoftReference;
@@ -18,9 +18,10 @@ import java.util.Stack;
  * Created by zhou on 16-10-20.
  * 自定义标签的处理
  */
-public class HtmlTagHandler implements Html.TagHandler {
+public class HtmlTagHandler implements HtmlCompat.TagHandler {
 
     private static final int code_color = Color.parseColor("#F0F0F0");
+    private static final int code_background_color = Color.parseColor("#000000");
     private static final int h1_color = Color.parseColor("#333333");
 
 
@@ -36,7 +37,7 @@ public class HtmlTagHandler implements Html.TagHandler {
     }
 
     @Override
-    public void handleTag(boolean opening, String tag, Editable output, XMLReader xmlReader) {
+    public void handleTag(boolean opening, String tag, Attributes attributes, Editable output, XMLReader xmlReader) {
         if (opening) {
             startTag(tag, output, xmlReader);
             stack.push(output.length());
@@ -71,8 +72,9 @@ public class HtmlTagHandler implements Html.TagHandler {
     private void reallyHandler(int start, int end, String tag, Editable out, XMLReader reader) {
         switch (tag.toLowerCase()) {
             case "code":
-                CodeSpan cs = new CodeSpan(code_color);
-                out.setSpan(cs, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            case "pre":
+                HtmlCodeBlockSpan cs = new HtmlCodeBlockSpan(getTextViewRealWidth(), code_background_color, code_color, start, end);
+                out.setSpan(cs, start, end, Spanned.SPAN_PARAGRAPH);
                 break;
             case "ol":
             case "ul":
@@ -90,14 +92,17 @@ public class HtmlTagHandler implements Html.TagHandler {
                     i = ++index;
                 }
                 out.append('\n');
-                TextView textView = textViewSoftReference.get();
-                if (textView == null) {
-                    return;
-                }
-                MarkDownBulletSpan bulletSpan = new MarkDownBulletSpan(list.size() - 1, h1_color, i, textView);
+                MarkDownBulletSpan bulletSpan = new MarkDownBulletSpan(list.size() - 1, h1_color, i);
                 out.setSpan(bulletSpan, start, out.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 break;
         }
     }
 
+    private int getTextViewRealWidth() {
+        TextView textView = textViewSoftReference.get();
+        if (textView != null) {
+            return textView.getWidth() - textView.getPaddingRight() - textView.getPaddingLeft();
+        }
+        return 0;
+    }
 }

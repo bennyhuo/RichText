@@ -28,7 +28,9 @@ android {
 }
 
 dependencies {
-    compile 'com.zzhoujay.markdown:markdown:1.0.5'
+//    compile 'com.zzhoujay.markdown:markdown:1.0.5'
+    compile project(":markdown")
+    compile project(":htmlcompat")
     compile 'com.jakewharton:disklrucache:2.0.2'
     compile 'com.android.support:support-v4:26.1.0'
 }
