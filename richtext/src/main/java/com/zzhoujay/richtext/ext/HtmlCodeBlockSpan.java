@@ -88,19 +88,17 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
     }
 
     private TextPaint textPaint = new TextPaint();
+    private TextPaint savedTextPaint = new TextPaint();
 
     @Override
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
-        float size = paint.getTextSize();
-        int color = paint.getColor();
-
-        paint.setTextSize(size * TEXT_SIZE_SCALE);
-        //paint.setColor(mTextColor);
-        paint.setTypeface(Typeface.MONOSPACE);
-
         drawBackground(canvas, start, end, (int) x, top, bottom);
 
         textPaint.set(paint);
+        textPaint.setTextSize(paint.getTextSize() * TEXT_SIZE_SCALE);
+        textPaint.setTypeface(Typeface.MONOSPACE);
+        saveTextPaint();
+
         ArrayList<LineRange> lineRanges = lineRangesMap.get(start);
         for (int i = 0; i < lineRanges.size(); i++) {
             LineRange lineRange = lineRanges.get(i);
@@ -111,32 +109,40 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
                 }
             }
             int lastEnd;
+            float lastX = x;
             if(filteredSpanInfos.isEmpty()){
                 lastEnd = lineRange.end;
             } else {
                 lastEnd = filteredSpanInfos.get(0).start;
             }
-            canvas.drawText(text, lineRange.start, lastEnd, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-            x += paint.measureText(text, lineRange.start, lastEnd);
+            canvas.drawText(text, lineRange.start, lastEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+            lastX += paint.measureText(text, lineRange.start, lastEnd);
             for (SpanInfo filteredSpanInfo : filteredSpanInfos) {
                 if(filteredSpanInfo.span instanceof ForegroundColorSpan){
                     if(lastEnd < filteredSpanInfo.start){
-                        canvas.drawText(text, lastEnd, filteredSpanInfo.start, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-                        x += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
+                        restoreTextPaint();
+                        canvas.drawText(text, lastEnd, filteredSpanInfo.start, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                        lastX += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
                     }
                     ((ForegroundColorSpan) filteredSpanInfo.span).updateDrawState(textPaint);
-                    canvas.drawText(text, filteredSpanInfo.start, filteredSpanInfo.end, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-                    x += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
+                    canvas.drawText(text, filteredSpanInfo.start, filteredSpanInfo.end, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                    lastX += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
                     lastEnd = filteredSpanInfo.end;
                 }
             }
             if (lastEnd < lineRange.end){
-                canvas.drawText(text, lastEnd, lineRange.end, x + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                restoreTextPaint();
+                canvas.drawText(text, lastEnd, lineRange.end, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
             }
         }
+    }
 
-        paint.setTextSize(size);
-        paint.setColor(color);
+    private void saveTextPaint() {
+        savedTextPaint.set(textPaint);
+    }
+
+    private void restoreTextPaint() {
+        textPaint.set(savedTextPaint);
     }
 
     private void drawBackground(Canvas canvas, int start, int end, int x, int top, int bottom) {
@@ -193,6 +199,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
             lineRanges = new ArrayList<>();
             this.lineRangesMap.put(start, lineRanges);
         }
+        lineRanges.clear();
         lineRanges.add(new LineRange(start, l));
         while (l < end) {
             int temp = l;
