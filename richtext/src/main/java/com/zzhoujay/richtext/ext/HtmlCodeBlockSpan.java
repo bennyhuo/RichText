@@ -6,7 +6,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.text.TextPaint;
 import android.text.style.CharacterStyle;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.LineHeightSpan;
 import android.text.style.ReplacementSpan;
 import android.util.Log;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by zhou on 16-7-2.
@@ -80,14 +80,15 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
     @Override
     public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
         Log.d(TAG, "getSize() :" + tagName);
-        float size = paint.getTextSize();
-        paint.setTextSize(size * TEXT_SIZE_SCALE);
-        paint.setTypeface(Typeface.MONOSPACE);
 
-        measureTextLine(text, start, end, paint);
+        textPaint.set(paint);
+        textPaint.setTextSize(paint.getTextSize() * TEXT_SIZE_SCALE);
+        textPaint.setTypeface(Typeface.MONOSPACE);
+        saveTextPaint();
+
+        measureTextLine(text, start, end);
 
         Log.d(TAG, lineRangesMap.toString());
-        paint.setTextSize(size);
         return mWidth;
     }
 
@@ -107,38 +108,62 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
         ArrayList<LineRange> lineRanges = lineRangesMap.get(start);
         for (int i = 0; i < lineRanges.size(); i++) {
             LineRange lineRange = lineRanges.get(i);
-            ArrayList<SpanInfo> filteredSpanInfos = new ArrayList<>();
-            for (SpanInfo spanInfo : spanInfos) {
-                if ((spanInfo.start >= lineRange.start && spanInfo.start < lineRange.end) ||
-                        (spanInfo.end > lineRange.start && spanInfo.end < lineRange.end)) {
-                    filteredSpanInfos.add(spanInfo);
-                }
-            }
-            int lastEnd;
+            List<SpanInfo> filteredSpanInfos = lineRange.spanInfos;
+//            int lastEnd;
             float lastX = x;
-            if(filteredSpanInfos.isEmpty()){
-                lastEnd = lineRange.end;
-            } else {
-                lastEnd = Math.max(filteredSpanInfos.get(0).start, lineRange.start);
-            }
-            canvas.drawText(text, lineRange.start, lastEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-            lastX += textPaint.measureText(text, lineRange.start, lastEnd);
-            for (SpanInfo filteredSpanInfo : filteredSpanInfos) {
-                if(filteredSpanInfo.span instanceof ForegroundColorSpan){
-                    if(lastEnd < filteredSpanInfo.start){
-                        restoreTextPaint();
-                        canvas.drawText(text, lastEnd, filteredSpanInfo.start, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-                        lastX += textPaint.measureText(text, lastEnd, filteredSpanInfo.start);
-                    }
-                    filteredSpanInfo.span.updateDrawState(textPaint);
+//            if(filteredSpanInfos.isEmpty()){
+//                lastEnd = lineRange.end;
+//            } else {
+//                lastEnd = Math.max(filteredSpanInfos.get(0).start, lineRange.start);
+//            }
+//            canvas.drawText(text, lineRange.start, lastEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+//            lastX += textPaint.measureText(text, lineRange.start, lastEnd);
+//            for (SpanInfo filteredSpanInfo : filteredSpanInfos) {
+//                if(filteredSpanInfo.span instanceof ForegroundColorSpan){
+//                    if(lastEnd < filteredSpanInfo.start){
+//                        restoreTextPaint();
+//                        canvas.drawText(text, lastEnd, filteredSpanInfo.start, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+//                        lastX += textPaint.measureText(text, lastEnd, filteredSpanInfo.start);
+//                    }
+//                    filteredSpanInfo.span.updateDrawState(textPaint);
+//
+//                    int thisStart = Math.max(lastEnd, filteredSpanInfo.start);
+//                    int thisEnd = Math.min(filteredSpanInfo.end, lineRange.end);
+//                    canvas.drawText(text, thisStart, thisEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+//                    lastX += textPaint.measureText(text, thisStart, thisEnd);
+//                    lastEnd = filteredSpanInfo.end;
+//                }
+//            }
+//            if (lastEnd < lineRange.end){
+//                restoreTextPaint();
+//                canvas.drawText(text, lastEnd, lineRange.end, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+//            }
 
-                    int thisStart = Math.max(lastEnd, filteredSpanInfo.start);
-                    int thisEnd = Math.min(filteredSpanInfo.end, lineRange.end);
-                    canvas.drawText(text, thisStart, thisEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-                    lastX += textPaint.measureText(text, thisStart, thisEnd);
-                    lastEnd = filteredSpanInfo.end;
+            int lastEnd = lineRange.start;
+            int thisEnd;
+            for (SpanInfo spanInfo : filteredSpanInfos) {
+                //测量 span 之前的一段
+                restoreTextPaint();
+                thisEnd = Math.min(Math.max(spanInfo.start, lastEnd), lineRange.end);
+                if (thisEnd != lastEnd) {
+                    canvas.drawText(text, lastEnd, thisEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                    lastX += textPaint.measureText(text, lastEnd, thisEnd);
+                    lastEnd = thisEnd;
+                }
+
+                thisEnd = Math.max(Math.min(spanInfo.end, lineRange.end), lastEnd);
+                if (thisEnd != lastEnd) {
+                    spanInfo.span.updateDrawState(textPaint);
+                    canvas.drawText(text, lastEnd, thisEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                    lastX += textPaint.measureText(text, lastEnd, thisEnd);
+                    lastEnd = thisEnd;
+                }
+
+                if (lastEnd >= lineRange.end) {
+                    break;
                 }
             }
+
             if (lastEnd < lineRange.end){
                 restoreTextPaint();
                 canvas.drawText(text, lastEnd, lineRange.end, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
@@ -176,56 +201,108 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
         fm.descent = fm.bottom + PADDING;
     }
 
-    private int getTextInLineLen(CharSequence text, int start, int end, Paint paint) {
-        int e = start;
-        while (paint.measureText(text, start, e) <= mWidth - PADDING * 2) {
-            e++;
-            if (e > end) {
+    private int getTextInLineLen(CharSequence text, int start, int end, ArrayList<SpanInfo> spanInfos) {
+        int measuredEnd = start;
+        while (measureText(text, start, measuredEnd, spanInfos) <= mWidth - PADDING * 2) {
+            measuredEnd++;
+            if (measuredEnd > end) {
                 break;
             }
         }
-        return e - 1;
+        return measuredEnd - 1;
     }
 
-    private int getTextInLineLenInRange(CharSequence text, int start, int end, int rs, int re, Paint paint) {
-        int e = rs;
+    private int measureText(CharSequence text, int start, int end, ArrayList<SpanInfo> spanInfos) {
+        int lastEnd = start;
+        int thisEnd;
+        int length = 0;
+        for (SpanInfo spanInfo : spanInfos) {
+            //测量 span 之前的一段
+            restoreTextPaint();
+            thisEnd = Math.min(Math.max(spanInfo.start, lastEnd), end);
+            if (thisEnd != lastEnd) {
+                length += textPaint.measureText(text, lastEnd, thisEnd);
+                lastEnd = thisEnd;
+            }
+
+            thisEnd = Math.max(Math.min(spanInfo.end, end), lastEnd);
+            if (thisEnd != lastEnd) {
+                spanInfo.span.updateDrawState(textPaint);
+                length += textPaint.measureText(text, lastEnd, thisEnd);
+                lastEnd = thisEnd;
+            }
+
+            if (lastEnd >= end) {
+                break;
+            }
+        }
+
+        if (lastEnd < end) {
+            restoreTextPaint();
+            length += textPaint.measureText(text, lastEnd, end);
+        }
+
+        return length;
+    }
+
+    private int getTextInLineLenInRange(CharSequence text, int start, int end, int rs, int re, ArrayList<SpanInfo> spanInfos) {
+        int measuredEnd = rs;
         if (rs > end) {
             return end;
         }
-        while (paint.measureText(text, start, e) < mWidth - PADDING * 2) {
-            e++;
-            if (e > end || e > re) {
+        while (measureText(text, start, measuredEnd, spanInfos) < mWidth - PADDING * 2) {
+            measuredEnd++;
+            if (measuredEnd > end || measuredEnd > re) {
                 break;
             }
         }
-        return e - 1;
+        return measuredEnd - 1;
     }
 
-    private void measureTextLine(CharSequence text, int start, int end, Paint paint) {
-        int l = getTextInLineLen(text, start, end, paint);
-        int count = l;
+    private void measureTextLine(CharSequence text, int start, int end) {
+
+        ArrayList<SpanInfo> filteredSpanInfos = new ArrayList<>();
+        for (SpanInfo spanInfo : spanInfos) {
+            if ((spanInfo.start >= start && spanInfo.start < end) ||
+                    (spanInfo.end > start && spanInfo.end < end)) {
+                filteredSpanInfos.add(spanInfo);
+            }
+        }
+
+        int lastEnd = getTextInLineLen(text, start, end, filteredSpanInfos);
+        int count = lastEnd - start;
         ArrayList<LineRange> lineRanges = this.lineRangesMap.get(start);
         if(lineRanges == null){
             lineRanges = new ArrayList<>();
             this.lineRangesMap.put(start, lineRanges);
         }
         lineRanges.clear();
-        lineRanges.add(new LineRange(start, l));
-        while (l < end) {
-            int temp = l;
-            l = getTextInLineLenInRange(text, l, end, l + count - 4, l + count + 4, paint);
-            count = l - temp;
-            lineRanges.add(new LineRange(temp, l));
+        lineRanges.add(new LineRange(start, lastEnd, filteredSpanInfos));
+        while (lastEnd < end) {
+            int temp = lastEnd;
+            lastEnd = getTextInLineLenInRange(text, lastEnd, end, lastEnd + count - 4, lastEnd + count + 4, filteredSpanInfos);
+            count = lastEnd - temp;
+            lineRanges.add(new LineRange(temp, lastEnd, filteredSpanInfos));
         }
     }
 
     static class LineRange{
         final int start;
         final int end;
+        final List<SpanInfo> spanInfos;
 
-        LineRange(int start, int end) {
+        LineRange(int start, int end, List<SpanInfo> spanInfos) {
             this.start = start;
             this.end = end;
+            ArrayList<SpanInfo> filtered = new ArrayList<>();
+            for (SpanInfo spanInfo : spanInfos) {
+                if ((spanInfo.start >= start && spanInfo.start < end) ||
+                        (spanInfo.end > start && spanInfo.end < end) ||
+                        (spanInfo.start < start && spanInfo.end >= end)) {
+                    filtered.add(spanInfo);
+                }
+            }
+            this.spanInfos = filtered;
         }
 
         @Override
