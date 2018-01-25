@@ -24,7 +24,7 @@ import java.util.Stack;
 public class HtmlTagHandler implements HtmlCompat.TagHandler {
 
     private static final int code_color = Color.parseColor("#000000");
-    private static final int code_background_color = Color.parseColor("#aaaaaa");
+    private static final int code_background_color = Color.parseColor("#ffffffff");
     private static final int h1_color = Color.parseColor("#333333");
 
 

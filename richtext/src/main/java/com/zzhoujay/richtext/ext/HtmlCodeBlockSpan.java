@@ -109,7 +109,8 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
             LineRange lineRange = lineRanges.get(i);
             ArrayList<SpanInfo> filteredSpanInfos = new ArrayList<>();
             for (SpanInfo spanInfo : spanInfos) {
-                if (spanInfo.start >= lineRange.start && spanInfo.end <= lineRange.end) {
+                if ((spanInfo.start >= lineRange.start && spanInfo.start < lineRange.end) ||
+                        (spanInfo.end > lineRange.start && spanInfo.end < lineRange.end)) {
                     filteredSpanInfos.add(spanInfo);
                 }
             }
@@ -118,7 +119,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
             if(filteredSpanInfos.isEmpty()){
                 lastEnd = lineRange.end;
             } else {
-                lastEnd = filteredSpanInfos.get(0).start;
+                lastEnd = Math.max(filteredSpanInfos.get(0).start, lineRange.start);
             }
             canvas.drawText(text, lineRange.start, lastEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
             lastX += textPaint.measureText(text, lineRange.start, lastEnd);
@@ -130,8 +131,11 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
                         lastX += textPaint.measureText(text, lastEnd, filteredSpanInfo.start);
                     }
                     filteredSpanInfo.span.updateDrawState(textPaint);
-                    canvas.drawText(text, filteredSpanInfo.start, filteredSpanInfo.end, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-                    lastX += textPaint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
+
+                    int thisStart = Math.max(lastEnd, filteredSpanInfo.start);
+                    int thisEnd = Math.min(filteredSpanInfo.end, lineRange.end);
+                    canvas.drawText(text, thisStart, thisEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
+                    lastX += textPaint.measureText(text, thisStart, thisEnd);
                     lastEnd = filteredSpanInfo.end;
                 }
             }
