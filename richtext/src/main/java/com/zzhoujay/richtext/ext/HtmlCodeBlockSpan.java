@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.text.TextPaint;
+import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.LineHeightSpan;
 import android.text.style.ReplacementSpan;
@@ -41,6 +42,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
     private static final int PADDING = 16;
     private static final float TEXT_SIZE_SCALE = 0.92f;
 
+    private String tagName;
     private int mWidth;
     private GradientDrawable mBackground;
     private int mTextColor;
@@ -60,7 +62,8 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     private HashMap<Integer, ArrayList<LineRange>> lineRangesMap = new HashMap();
 
-    public HtmlCodeBlockSpan(int width, int backgroundColor, int textColor, int start, int end, Attributes attributes, ArrayList<SpanInfo> spanInfos) {
+    public HtmlCodeBlockSpan(String tagName, int width, int backgroundColor, int textColor, int start, int end, Attributes attributes, ArrayList<SpanInfo> spanInfos) {
+        this.tagName = tagName;
         mWidth = width;
         this.start = start;
         this.end = end;
@@ -76,6 +79,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
+        Log.d(TAG, "getSize() :" + tagName);
         float size = paint.getTextSize();
         paint.setTextSize(size * TEXT_SIZE_SCALE);
         paint.setTypeface(Typeface.MONOSPACE);
@@ -92,6 +96,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
+        Log.d(TAG, "draw() :" + tagName);
         drawBackground(canvas, start, end, (int) x, top, bottom);
 
         textPaint.set(paint);
@@ -116,17 +121,17 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
                 lastEnd = filteredSpanInfos.get(0).start;
             }
             canvas.drawText(text, lineRange.start, lastEnd, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-            lastX += paint.measureText(text, lineRange.start, lastEnd);
+            lastX += textPaint.measureText(text, lineRange.start, lastEnd);
             for (SpanInfo filteredSpanInfo : filteredSpanInfos) {
                 if(filteredSpanInfo.span instanceof ForegroundColorSpan){
                     if(lastEnd < filteredSpanInfo.start){
                         restoreTextPaint();
                         canvas.drawText(text, lastEnd, filteredSpanInfo.start, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-                        lastX += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
+                        lastX += textPaint.measureText(text, lastEnd, filteredSpanInfo.start);
                     }
-                    ((ForegroundColorSpan) filteredSpanInfo.span).updateDrawState(textPaint);
+                    filteredSpanInfo.span.updateDrawState(textPaint);
                     canvas.drawText(text, filteredSpanInfo.start, filteredSpanInfo.end, lastX + PADDING, y + i * singleLineHeight + PADDING, textPaint);
-                    lastX += paint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
+                    lastX += textPaint.measureText(text, filteredSpanInfo.start, filteredSpanInfo.end);
                     lastEnd = filteredSpanInfo.end;
                 }
             }
@@ -159,6 +164,7 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public void chooseHeight(CharSequence text, int start, int end, int spanstartv, int v, Paint.FontMetricsInt fm) {
+        Log.d(TAG, "chooseHeight: " + tagName);
         if(singleLineHeight == 0){
             singleLineHeight = fm.bottom - fm.top;
         }
@@ -228,11 +234,11 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
     }
 
     public static class SpanInfo {
-        public final Object span;
+        public final CharacterStyle span;
         public final int start;
         public final int end;
 
-        public SpanInfo(Object span, int start, int end) {
+        public SpanInfo(CharacterStyle span, int start, int end) {
             this.span = span;
             this.start = start;
             this.end = end;

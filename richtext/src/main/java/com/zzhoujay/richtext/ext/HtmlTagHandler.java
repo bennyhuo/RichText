@@ -3,6 +3,7 @@ package com.zzhoujay.richtext.ext;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.Spanned;
+import android.text.style.CharacterStyle;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -23,7 +24,7 @@ import java.util.Stack;
 public class HtmlTagHandler implements HtmlCompat.TagHandler {
 
     private static final int code_color = Color.parseColor("#000000");
-    private static final int code_background_color = Color.parseColor("#555555");
+    private static final int code_background_color = Color.parseColor("#aaaaaa");
     private static final int h1_color = Color.parseColor("#333333");
 
 
@@ -72,6 +73,7 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
 
     @SuppressWarnings("unused")
     private void reallyHandler(int start, int end, String tag, Editable out, Attributes attributes, XMLReader reader) {
+        SWITCH:
         switch (tag.toLowerCase()) {
             case "code":
             case "pre":
@@ -79,9 +81,14 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
                 ArrayList<HtmlCodeBlockSpan.SpanInfo> spanInfos = new ArrayList<>(spans.length);
                 for (Object span : spans) {
                     Log.d("span", span.toString());
-                    spanInfos.add(new HtmlCodeBlockSpan.SpanInfo(span, out.getSpanStart(span), out.getSpanEnd(span)));
+                    if (span instanceof HtmlCodeBlockSpan) {
+                        //如果存在代码块，就不处理这个 tag
+                        break SWITCH;
+                    } else if (span instanceof CharacterStyle) {
+                        spanInfos.add(new HtmlCodeBlockSpan.SpanInfo((CharacterStyle) span, out.getSpanStart(span), out.getSpanEnd(span)));
+                    }
                 }
-                HtmlCodeBlockSpan cs = new HtmlCodeBlockSpan(getTextViewRealWidth(), code_background_color, code_color, start, end, attributes, spanInfos);
+                HtmlCodeBlockSpan cs = new HtmlCodeBlockSpan(tag, getTextViewRealWidth(), code_background_color, code_color, start, end, attributes, spanInfos);
                 out.setSpan(cs, start, end, Spanned.SPAN_PARAGRAPH);
                 break;
             case "ol":
