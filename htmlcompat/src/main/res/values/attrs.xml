@@ -3,6 +3,9 @@
     <declare-styleable name="HtmlCompatCssClass">
         <attr name="htmlForegroundColor" format="color"/>
         <attr name="htmlFontStyle" format="enum">
+            <enum name="normal" value="0"/>
+            <enum name="bold" value="1"/>
+            <enum name="italic" value="2"/>
         </attr>
     </declare-styleable>
 </resources>

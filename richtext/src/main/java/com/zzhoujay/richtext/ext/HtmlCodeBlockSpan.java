@@ -79,26 +79,28 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
-        Log.d(TAG, "getSize() :" + tagName);
+        Log.d(TAG, "getSize() :" + tagName + "; text: " + text.subSequence(start, end));
 
         textPaint.set(paint);
         textPaint.setTextSize(paint.getTextSize() * TEXT_SIZE_SCALE);
         textPaint.setTypeface(Typeface.MONOSPACE);
         saveTextPaint();
 
-        measureTextLine(text, start, end);
-
-        Log.d(TAG, lineRangesMap.toString());
-        return mWidth;
+        int lineWidth = measureTextLine(text, start, end);
+        Log.d(TAG, "lineWidth = " + lineWidth);
+        //Log.d(TAG, lineRangesMap.toString());
+        return Math.min(lineWidth, mWidth);
     }
 
     private TextPaint textPaint = new TextPaint();
     private TextPaint savedTextPaint = new TextPaint();
 
+
+
     @Override
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
-        Log.d(TAG, "draw() :" + tagName);
-        drawBackground(canvas, start, end, (int) x, top, bottom);
+        Log.d(TAG, "draw() text = [" + text.subSequence(start, end) + "], x=[" + x +"], top = [" + top + "], y = [" + y + "], bottom = [" + bottom + "]");
+        //drawBackground(canvas, start, end, (int) x, top, bottom);
 
         textPaint.set(paint);
         textPaint.setTextSize(paint.getTextSize() * TEXT_SIZE_SCALE);
@@ -193,23 +195,13 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
 
     @Override
     public void chooseHeight(CharSequence text, int start, int end, int spanstartv, int v, Paint.FontMetricsInt fm) {
+        Log.d(TAG, "chooseHeight text = [" + text.subSequence(start, end) + "], spanstartv = [" + spanstartv + "], v = [" + v + "]");
         Log.d(TAG, "chooseHeight: " + tagName);
         if(singleLineHeight == 0){
             singleLineHeight = fm.bottom - fm.top;
         }
         fm.bottom = fm.top + singleLineHeight * lineRangesMap.get(start).size();
         fm.descent = fm.bottom + PADDING;
-    }
-
-    private int getTextInLineLen(CharSequence text, int start, int end, ArrayList<SpanInfo> spanInfos) {
-        int measuredEnd = start;
-        while (measureText(text, start, measuredEnd, spanInfos) <= mWidth - PADDING * 2) {
-            measuredEnd++;
-            if (measuredEnd > end) {
-                break;
-            }
-        }
-        return measuredEnd - 1;
     }
 
     private int measureText(CharSequence text, int start, int end, ArrayList<SpanInfo> spanInfos) {
@@ -245,21 +237,19 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
         return length;
     }
 
-    private int getTextInLineLenInRange(CharSequence text, int start, int end, int rs, int re, ArrayList<SpanInfo> spanInfos) {
-        int measuredEnd = rs;
-        if (rs > end) {
-            return end;
-        }
-        while (measureText(text, start, measuredEnd, spanInfos) < mWidth - PADDING * 2) {
+    private int[] getTextInLineLen(CharSequence text, int start, int end, ArrayList<SpanInfo> spanInfos) {
+        int measuredEnd = start;
+        int width;
+        while ((width = measureText(text, start, measuredEnd, spanInfos)) <= mWidth - PADDING * 2) {
             measuredEnd++;
-            if (measuredEnd > end || measuredEnd > re) {
+            if (measuredEnd > end) {
                 break;
             }
         }
-        return measuredEnd - 1;
+        return new int[]{measuredEnd - 1, width};
     }
 
-    private void measureTextLine(CharSequence text, int start, int end) {
+    private int measureTextLine(CharSequence text, int start, int end) {
 
         ArrayList<SpanInfo> filteredSpanInfos = new ArrayList<>();
         for (SpanInfo spanInfo : spanInfos) {
@@ -269,21 +259,24 @@ public class HtmlCodeBlockSpan extends ReplacementSpan implements LineHeightSpan
             }
         }
 
-        int lastEnd = getTextInLineLen(text, start, end, filteredSpanInfos);
-        int count = lastEnd - start;
+        int[] result = getTextInLineLen(text, start, end, filteredSpanInfos);
         ArrayList<LineRange> lineRanges = this.lineRangesMap.get(start);
         if(lineRanges == null){
             lineRanges = new ArrayList<>();
             this.lineRangesMap.put(start, lineRanges);
         }
         lineRanges.clear();
-        lineRanges.add(new LineRange(start, lastEnd, filteredSpanInfos));
+        lineRanges.add(new LineRange(start, result[0], filteredSpanInfos));
+        int lastEnd = result[0];
+        int width = result[1];
         while (lastEnd < end) {
-            int temp = lastEnd;
-            lastEnd = getTextInLineLenInRange(text, lastEnd, end, lastEnd + count - 4, lastEnd + count + 4, filteredSpanInfos);
-            count = lastEnd - temp;
-            lineRanges.add(new LineRange(temp, lastEnd, filteredSpanInfos));
+            int[] ret = getTextInLineLen(text, lastEnd, end, filteredSpanInfos);
+            lineRanges.add(new LineRange(lastEnd, ret[0], filteredSpanInfos));
+            lastEnd = ret[0];
+            width += ret[1];
         }
+
+        return width;
     }
 
     static class LineRange{

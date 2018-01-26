@@ -132,14 +132,14 @@ public class MainActivity extends AppCompatActivity {
 //            }
         });
 
-        RichText.from("<h4>@<del>bennyhuo</del></h4>\n<div class=\"highlight highlight-source-Kotlin\"><pre><code><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n        println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>Hello2 asdfasdfalsdjfl kjasldjflasjdlfjalsjdflkjsd    ljflajsldfjlk<span class=\"pl-pds\">\"</span></span>)\n}</code></pre></div>").into(textView1);
+        RichText.from("<h4>@<del>bennyhuo</del></h4>\n<div class=\"highlight highlight-source-Kotlin\"><pre><code><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n        println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>Hello2 asdfaasdjlfjlaksdjlfjlasdjlfjlkajdsljklflkjadlkjsjfjdlajljfljadlsjlfjljljsdfalsdjfl kjasldjflasjdlfjalsjdflkjsd    ljflajsldfjlk<span class=\"pl-pds\">\"</span></span>)\n}</code></pre></div>").into(textView1);
 //        RichText.fromHtml("<![CDATA[ a\n\nb\nc\n ]]>").into(textView);
 
         final TextView textView2 = findViewById(R.id.text2);
         textView2.setMovementMethod(new ScrollingMovementMethod());
         RichText.fromMarkdown("@bennyhuo\n```kotlin\n" +
                 "fun main(args: Array<String>){\n" +
-                "\tprintln(\"Hello2asdfasdfalsdjflkjasldjflasjdlfjalsjdflkjsdljflajsldfjlk\")\n" +
+                "\tprintln(\"Hello2asdfasdfafasdfasdfasdfadffffffffffffffdfdfdfdaklsjdflkjalsdjfljadlsjflkahsdfhadskljfladkfjklajdsklfjladsjkfkadsflkasjlkfasdlkfjkasjdlfjasdjlkfjalsdjflkjasldjflasjdlfjalsjdflkjsdljflajsldfjlk\")\n" +
                 "}\n" +
                 "```").into(textView2);
 //        RichText.from(test_text_2).showBorder(true)

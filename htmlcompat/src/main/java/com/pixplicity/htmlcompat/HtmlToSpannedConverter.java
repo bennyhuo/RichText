@@ -625,6 +625,18 @@ class HtmlToSpannedConverter implements ContentHandler {
                         } else {
                             Log.w("HtmlCompat", "Missing HtmlCompatCssClass_htmlForegroundColor for css class " + cls + ", ignore css class.");
                         }
+
+                        int fontStyle = a.getColor(R.styleable.HtmlCompatCssClass_htmlFontStyle, -1);
+                        switch (fontStyle){
+                            case 1: {
+                                start(text, new Bold());
+                            }
+                            break;
+                            case 2: {
+                                start(text, new Italic());
+                            }
+                            break;
+                        }
                         a.recycle();
                     } else {
                         Log.w("HtmlCompat", "Missing HtmlCompatCssClass in your theme, ignore css.");
@@ -695,6 +707,23 @@ class HtmlToSpannedConverter implements ContentHandler {
                 setSpanFromMark(tag, text, foreground, new ForegroundColorSpan(foreground.mForegroundColor));
             }
         }
+
+        Bold bold = getLast(text, Bold.class);
+        if(bold != null) {
+            int spanStart = text.getSpanStart(bold);
+            if (spanStart == tagInfo.start && tagInfo.tokens.remove(bold)) {
+                setSpanFromMark(tag, text, bold, new StyleSpan(Typeface.BOLD));
+            }
+        }
+
+        Italic italic = getLast(text, Italic.class);
+        if(italic != null) {
+            int spanStart = text.getSpanStart(italic);
+            if (spanStart == tagInfo.start && tagInfo.tokens.remove(italic)) {
+                setSpanFromMark(tag, text, italic, new StyleSpan(Typeface.ITALIC));
+            }
+        }
+
         AbsoluteSize absoluteSize = getLast(text, AbsoluteSize.class);
         if(absoluteSize != null) {
             int spanStart = text.getSpanStart(absoluteSize);

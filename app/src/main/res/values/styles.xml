@@ -12,6 +12,7 @@
 
     <style name="pl_k">
         <item name="htmlForegroundColor">#d73a49</item>
+        <item name="htmlFontStyle">bold</item>
     </style>
 
     <style name="pl_s">
@@ -20,5 +21,6 @@
 
     <style name="pl_en">
         <item name="htmlForegroundColor">#6f42c1</item>
+        <item name="htmlFontStyle">italic</item>
     </style>
 </resources>
