@@ -2,19 +2,23 @@ package com.zzhoujay.richtext.ext;
 
 import android.graphics.Color;
 import android.text.Editable;
+import android.text.Spannable;
 import android.text.Spanned;
-import android.text.style.CharacterStyle;
-import android.util.Log;
+import android.text.style.LeadingMarginSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.TypefaceSpan;
 import android.widget.TextView;
 
 import com.pixplicity.htmlcompat.HtmlCompat;
 import com.zzhoujay.markdown.style.MarkDownBulletSpan;
+import com.zzhoujay.richtext.spans.DumSpan;
+import com.zzhoujay.richtext.spans.LinespaceSpan;
+import com.zzhoujay.richtext.spans.RoundedBackgroundSpan;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.XMLReader;
 
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
 import java.util.Stack;
 
 /**
@@ -27,6 +31,7 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
     private static final int code_background_color = Color.parseColor("#ffffffff");
     private static final int h1_color = Color.parseColor("#333333");
 
+    private static final int PADDING = 16;
 
     private Stack<Integer> stack;
     private Stack<Boolean> list;
@@ -77,19 +82,18 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
         switch (tag.toLowerCase()) {
             case "code":
             case "pre":
-                Object[] spans = out.getSpans(start, end, Object.class);
-                ArrayList<HtmlCodeBlockSpan.SpanInfo> spanInfos = new ArrayList<>(spans.length);
-                for (Object span : spans) {
-                    Log.d("span", span.toString());
-                    if (span instanceof HtmlCodeBlockSpan) {
-                        //如果存在代码块，就不处理这个 tag
-                        break SWITCH;
-                    } else if (span instanceof CharacterStyle) {
-                        spanInfos.add(new HtmlCodeBlockSpan.SpanInfo((CharacterStyle) span, out.getSpanStart(span), out.getSpanEnd(span)));
-                    }
+                DumSpan[] spans = out.getSpans(start, end, DumSpan.class);
+                if(spans.length > 0){
+                    break;
                 }
-                HtmlCodeBlockSpan cs = new HtmlCodeBlockSpan(tag, getTextViewRealWidth(), code_background_color, code_color, start, end, attributes, spanInfos);
-                out.setSpan(cs, start, end, Spanned.SPAN_PARAGRAPH);
+                out.setSpan(new LeadingMarginSpan.Standard(PADDING),  start, end, Spannable.SPAN_PARAGRAPH);
+                out.setSpan(new RoundedBackgroundSpan(start, end, Color.LTGRAY, PADDING), start, end, Spannable.SPAN_PARAGRAPH);
+                out.setSpan(new TypefaceSpan("monospace"), start, end, Spanned.SPAN_PARAGRAPH);
+                out.setSpan(new LinespaceSpan(PADDING), start, end, Spanned.SPAN_PARAGRAPH);
+                out.setSpan(new RelativeSizeSpan(0.92f), start, end, Spanned.SPAN_PARAGRAPH);
+
+                //标记不重复，如果有嵌套，只处理最内层
+                out.setSpan(new DumSpan(), start, end, Spanned.SPAN_PARAGRAPH);
                 break;
             case "ol":
             case "ul":
