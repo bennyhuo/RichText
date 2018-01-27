@@ -3,12 +3,8 @@ package zhou.demo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Spannable;
-import android.text.method.BaseMovementMethod;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.widget.TextView;
 
 import com.zzhoujay.richtext.RichText;
@@ -87,51 +83,18 @@ public class MainActivity extends AppCompatActivity {
         RichText.debugMode = true;
 
         final TextView textView1 = (TextView) findViewById(R.id.text);
+        final TextView textView2 = (TextView) findViewById(R.id.text2);
 
         String test_text_2 = "<p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃";
-        textView1.setMovementMethod(new BaseMovementMethod() {
+
+        RichText.from("<ul>\n<li>你好</li>\n<li><strong>啦啦啦</strong></li>\n</ul>\n<pre><code>println\nprintln(\"\")\n</code></pre>\n<blockquote>\n<p>HELLO</p>\n</blockquote>\n<p><a href=\"\">haha</a><br>\n<em>Hello</em></p>").into(textView1);
 
 
-//            float lastX = 0;
-//
-            @Override
-            public boolean onTouchEvent(TextView widget, Spannable text, MotionEvent event) {
-                Log.d(TAG, "onTouchEvent()  text = [" + text + "], event = [" + event + "]");
-//                switch (event.getAction()){
-//                    case MotionEvent.ACTION_DOWN: {
-//                        lastX = event.getRawX();
-//                    }
-//                    break;
-//                    case MotionEvent.ACTION_MOVE: {
-//                        float thisX = event.getRawX();
-//                        float offsetX = thisX - lastX;
-//                        Log.d(TAG, "onTouchEvent() move " + offsetX);
-//                        widget.scrollBy((int) offsetX, 0);
-//                        lastX = thisX;
-//                    }
-//                    break;
-//                }
-//
-                return super.onTouchEvent(widget, text, event);
-            }
-//
-            @Override
-            public boolean onGenericMotionEvent(TextView widget, Spannable text, MotionEvent event) {
-                Log.d(TAG, "onGenericMotionEvent() called with: widget = [" + widget + "], text = [" + text + "], event = [" + event + "]");
-                return super.onGenericMotionEvent(widget, text, event);
-            }
-//
-//            @Override
-//            public boolean canSelectArbitrarily() {
-//                return false;
-//            }
-        });
-
-        RichText.from("<div class=\"highlight highlight-source-Kotlin\"><pre><code><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n    println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>Hello Kotlin<span class=\"pl-pds\">\"</span></span>)\n}</code></pre></div>").into(textView1);
+        RichText.from("<div class=\"highlight highlight-source-Kotlin\"><pre><code><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n    println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>Hello Kotlin<span class=\"pl-pds\">\"</span></span>)\n}</code></pre></div>").into(textView2);
     }
 
     @Override

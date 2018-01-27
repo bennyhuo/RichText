@@ -51,6 +51,10 @@ public class RoundedBackgroundSpan implements LineBackgroundSpan {
 
     @Override
     public void drawBackground(Canvas c, Paint p, int left, int right, int top, int baseline, int bottom, CharSequence text, int start, int end, int lnum) {
+        if(start >= this.end || end <= this.start){
+            return;
+        }
+
         int origColor = p.getColor();
         p.setColor(color);
 
@@ -59,7 +63,7 @@ public class RoundedBackgroundSpan implements LineBackgroundSpan {
             background.setCornerRadii(RADIUS_START_END);
         } else if (start == this.start) {
             background.setCornerRadii(RADIUS_START);
-        } else if(end == this.end || end == this.end + 1){
+        } else if(end == this.end || (start < this.end && end == this.end + 1)){
             background.setCornerRadii(RADIUS_END);
         } else {
             background.setCornerRadius(0);
