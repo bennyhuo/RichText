@@ -1,12 +1,14 @@
 package com.zzhoujay.richtext.ext;
 
-import android.graphics.Color;
+import android.content.Context;
+import android.content.res.TypedArray;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.LeadingMarginSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.pixplicity.htmlcompat.HtmlCompat;
@@ -27,22 +29,33 @@ import java.util.Stack;
  */
 public class HtmlTagHandler implements HtmlCompat.TagHandler {
 
-    private static final int code_color = Color.parseColor("#000000");
-    private static final int code_background_color = Color.parseColor("#ffffffff");
-    private static final int h1_color = Color.parseColor("#333333");
-
-    private static final int PADDING = 16;
-
     private Stack<Integer> stack;
     private Stack<Boolean> list;
     private int index = 0;
     private SoftReference<TextView> textViewSoftReference;
+    private int h1_text_color;
+    private int code_background_color;
 
     public HtmlTagHandler(TextView textView) {
         stack = new Stack<>();
         list = new Stack<>();
         this.textViewSoftReference = new SoftReference<>(textView);
+
+        Context context = textView.getContext();
+        TypedArray a = context.obtainStyledAttributes(null, com.zzhoujay.markdown.R.styleable.MarkdownTheme, com.zzhoujay.markdown.R.attr.markdownStyle, 0);
+        final boolean failed = !a.hasValue(0);
+        if (failed) {
+            Log.w("Markdown", "Missing markdownStyle in your theme, using hardcoded color.");
+            h1_text_color = 0xdf000000;
+            code_background_color = 0x0c37474f;
+        } else {
+            h1_text_color = a.getColor(com.zzhoujay.markdown.R.styleable.MarkdownTheme_h1TextColor, 0);
+            code_background_color = a.getColor(com.zzhoujay.markdown.R.styleable.MarkdownTheme_codeBackgroundColor, 0);
+        }
+
+        a.recycle();
     }
+
 
     @Override
     public void handleTag(boolean opening, String tag, Attributes attributes, Editable output, XMLReader xmlReader) {
@@ -82,15 +95,19 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
         switch (tag.toLowerCase()) {
             case "code":
             case "pre":
+                if (textViewSoftReference.get() == null) {
+                    break;
+                }
                 DumSpan[] spans = out.getSpans(start, end, DumSpan.class);
                 if(spans.length > 0){
                     break;
                 }
-                out.setSpan(new LeadingMarginSpan.Standard(PADDING),  start, end, Spannable.SPAN_PARAGRAPH);
-                out.setSpan(new RoundedBackgroundSpan(start, end, Color.LTGRAY, PADDING), start, end, Spannable.SPAN_PARAGRAPH);
+                int padding = (int) textViewSoftReference.get().getTextSize();
+                out.setSpan(new LeadingMarginSpan.Standard(padding / 2),  start, end, Spannable.SPAN_PARAGRAPH);
+                out.setSpan(new RoundedBackgroundSpan(start, end, code_background_color, padding / 3), start, end, Spannable.SPAN_PARAGRAPH);
                 out.setSpan(new TypefaceSpan("monospace"), start, end, Spanned.SPAN_PARAGRAPH);
-                out.setSpan(new LinespaceSpan(PADDING), start, end, Spanned.SPAN_PARAGRAPH);
-                out.setSpan(new RelativeSizeSpan(0.92f), start, end, Spanned.SPAN_PARAGRAPH);
+                out.setSpan(new LinespaceSpan(padding / 2), start, end, Spanned.SPAN_PARAGRAPH);
+                out.setSpan(new RelativeSizeSpan(0.8f), start, end, Spanned.SPAN_PARAGRAPH);
 
                 //标记不重复，如果有嵌套，只处理最内层
                 out.setSpan(new DumSpan(), start, end, Spanned.SPAN_PARAGRAPH);
@@ -111,7 +128,7 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
                     i = ++index;
                 }
                 out.append('\n');
-                MarkDownBulletSpan bulletSpan = new MarkDownBulletSpan(list.size() - 1, h1_color, i);
+                MarkDownBulletSpan bulletSpan = new MarkDownBulletSpan(list.size() - 1, h1_text_color, i);
                 out.setSpan(bulletSpan, start, out.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 break;
         }
