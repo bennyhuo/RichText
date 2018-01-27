@@ -1,6 +1,45 @@
+
 # RichText
 
 > Android平台下的富文本解析器
+
+### 修订说明 by Bennyhuo
+
+本项目 Fork 自 [zzhoujay/RichText](https://github.com/zzhoujay/RichText)，基于原项目做了如下修改：
+
+ 1. 替换原生 Html 解析器为衍生自 [Pixplicity/HtmlCompat](https://github.com/Pixplicity/HtmlCompat) 的 Html 解析器，支持 `pre`、`code` 标签中保留空白字符（包括空格、换行等），并扩展了对些许 CSS 样式的支持。
+ 2. 调整 RichText 对 Html 文本中 `pre` 和 `code` 的渲染。
+
+#### 示例：
+
+ 效果：
+
+ ![](image/css_class.png)
+
+代码：
+
+```java
+RichText.from("<div class=\"highlight highlight-source-Kotlin\"><pre><code><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n    println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>Hello Kotlin<span class=\"pl-pds\">\"</span></span>)\n}</code></pre></div>")
+    .into(textView);
+```
+
+```xml
+<style name="pl_k">
+    <item name="htmlForegroundColor">#d73a49</item>
+    <item name="htmlFontStyle">bold</item>
+</style>
+
+<style name="pl_s">
+    <item name="htmlForegroundColor">#00a000</item>
+</style>
+
+<style name="pl_en">
+    <item name="htmlForegroundColor">#6f42c1</item>
+    <item name="htmlFontStyle">italic</item>
+</style>
+```
+
+---
 
 * 流式操作
 * 低侵入性
@@ -42,7 +81,8 @@ ImageFixCallback的回调方法不一定是在主线程回调，注意不要进�
 本地图片由根路径`\`开头，Assets目录图片由`file:///android_asset/`开头
 
 Gif图片播放不支持硬件加速，若要使用Gif图片请先关闭TextView的硬件加速
-```
+
+```java
 textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 ```
 
@@ -99,3 +139,5 @@ SOFTWARE.
 ```
 
 _by zzhoujay_
+
+
