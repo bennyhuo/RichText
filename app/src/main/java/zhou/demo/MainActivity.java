@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         RichText.initCacheDir(this);
         RichText.debugMode = true;
 
-        final TextView textView1 = findViewById(R.id.text);
+        final TextView textView1 = (TextView) findViewById(R.id.text);
 
         String test_text_2 = "<p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
                 "<img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' />似懂非懂撒范德萨咖啡机盛大开放惊世毒妃</p><p>我是文本内容 <img src='http://wx1.sinaimg.cn/mw690/eaaf2affly1fihvjpekzwj21el0qotfq.jpg' /> 下一个" +
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         RichText.from("<h4>@<del>bennyhuo</del></h4>\n<div class=\"highlight highlight-source-Kotlin\"><pre><code><span class=\"pl-k\">fun</span> <span class=\"pl-en\">main</span>(<span class=\"pl-smi\">args</span><span class=\"pl-k\">:</span> <span class=\"pl-k\">Array</span>&lt;<span class=\"pl-k\">String</span>&gt;){\n        println(<span class=\"pl-s\"><span class=\"pl-pds\">\"</span>Hello2 asdfaasdjlfjlaksdjlfjlasdjlfjlkajdsljklflkjadlkjsjfjdlajljfljadlsjlfjljljsdfalsdjfl kjasldjflasjdlfjalsjdflkjsd    ljflajsldfjlk<span class=\"pl-pds\">\"</span></span>)\n}</code></pre></div>").into(textView1);
 //        RichText.fromHtml("<![CDATA[ a\n\nb\nc\n ]]>").into(textView);
 
-        final TextView textView2 = findViewById(R.id.text2);
+        final TextView textView2 = (TextView) findViewById(R.id.text2);
         textView2.setMovementMethod(new ScrollingMovementMethod());
         RichText.fromMarkdown("@bennyhuo\n```kotlin\n" +
                 "fun main(args: Array<String>){\n" +
