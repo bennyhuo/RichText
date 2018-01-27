@@ -103,14 +103,14 @@ public class HtmlTagHandler implements HtmlCompat.TagHandler {
                     break;
                 }
                 int padding = (int) textViewSoftReference.get().getTextSize();
-                out.setSpan(new LeadingMarginSpan.Standard(padding / 2),  start, end, Spannable.SPAN_PARAGRAPH);
-                out.setSpan(new RoundedBackgroundSpan(start, end, code_background_color, padding / 3), start, end, Spannable.SPAN_PARAGRAPH);
-                out.setSpan(new TypefaceSpan("monospace"), start, end, Spanned.SPAN_PARAGRAPH);
-                out.setSpan(new LinespaceSpan(padding / 2), start, end, Spanned.SPAN_PARAGRAPH);
-                out.setSpan(new RelativeSizeSpan(0.8f), start, end, Spanned.SPAN_PARAGRAPH);
+                out.setSpan(new TypefaceSpan("monospace"), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                out.setSpan(new RelativeSizeSpan(0.8f), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                out.setSpan(new LeadingMarginSpan.Standard(padding / 2),  start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                out.setSpan(new RoundedBackgroundSpan(out, start, end, code_background_color, padding / 3), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                out.setSpan(new LinespaceSpan(padding / 2), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                 //标记不重复，如果有嵌套，只处理最内层
-                out.setSpan(new DumSpan(), start, end, Spanned.SPAN_PARAGRAPH);
+                out.setSpan(new DumSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 break;
             case "ol":
             case "ul":

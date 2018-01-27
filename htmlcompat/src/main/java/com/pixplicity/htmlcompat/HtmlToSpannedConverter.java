@@ -296,6 +296,7 @@ class HtmlToSpannedConverter implements ContentHandler {
         for (Object span : spans) {
             int start = mSpannableStringBuilder.getSpanStart(span);
             int end = mSpannableStringBuilder.getSpanEnd(span);
+            int flags = mSpannableStringBuilder.getSpanFlags(span);
             // If the last line of the range is blank, back off by one.
             if (end - 2 >= 0) {
                 if (mSpannableStringBuilder.charAt(end - 1) == '\n' &&
@@ -306,7 +307,8 @@ class HtmlToSpannedConverter implements ContentHandler {
             if (end == start) {
                 mSpannableStringBuilder.removeSpan(span);
             } else {
-                mSpannableStringBuilder.setSpan(span, start, end, Spannable.SPAN_PARAGRAPH);
+                // WTF？为什么  ParagraphStyle 就一定是 ParagraphStyle flag？
+                mSpannableStringBuilder.setSpan(span, start, end, flags);
             }
         }
         return mSpannableStringBuilder;
