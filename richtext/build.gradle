@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'
+//apply plugin: 'com.novoda.bintray-release'
 
 def version_code = 62
 def version_name = "3.0.5"
@@ -35,18 +35,47 @@ dependencies {
     compile 'com.android.support:support-v4:25.4.0'
 }
 
-publish {
+//publish {
+//
+//    Properties properties = new Properties()
+//    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+//    userOrg = properties.getProperty("bintray.user")
+//    bintrayUser=properties.getProperty("bintray.user")
+//    bintrayKey=properties.getProperty("bintray.key")
+//
+//    groupId = "com.zzhoujay.richtext"
+//    artifactId = 'richtext'
+//    publishVersion = version_name
+//    desc = 'Android端的富文本解析器'
+//    website = 'https://github.com/zzhoujay/RichTex'
+//
+//}
 
-    Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
-    userOrg = properties.getProperty("bintray.user")
-    bintrayUser=properties.getProperty("bintray.user")
-    bintrayKey=properties.getProperty("bintray.key")
+//region jitpack
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.enbandari'
 
-    groupId = "com.zzhoujay.richtext"
-    artifactId = 'richtext'
-    publishVersion = version_name
-    desc = 'Android端的富文本解析器'
-    website = 'https://github.com/zzhoujay/RichTex'
-
+// build a jar with source files
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
 }
+
+task javadoc(type: Javadoc) {
+    failOnError  false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+// build a jar with javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+//endregion

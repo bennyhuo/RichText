@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'
+//apply plugin: 'com.novoda.bintray-release'
 
 def version_code = 18
 def version_name = '1.0.5'
@@ -31,21 +31,50 @@ dependencies {
 }
 
 
-publish {
+//publish {
+//
+//    Properties properties = new Properties()
+//    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+//    //bintray.com用户名
+//    userOrg = properties.getProperty("bintray.user")
+//    //jcenter上的路径
+//    groupId = "com.zzhoujay.markdown"
+//    //项目名称
+//    artifactId = 'markdown'
+//    //版本号
+//    publishVersion = version_name
+//    //描述，不重要
+//    desc = 'Android平台原生Markdown解析器'
+//    //网站，不重要
+//    website = 'https://github.com/zzhoujay/Markdown'
+//
+//}
 
-    Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
-    //bintray.com用户名
-    userOrg = properties.getProperty("bintray.user")
-    //jcenter上的路径
-    groupId = "com.zzhoujay.markdown"
-    //项目名称
-    artifactId = 'markdown'
-    //版本号
-    publishVersion = version_name
-    //描述，不重要
-    desc = 'Android平台原生Markdown解析器'
-    //网站，不重要
-    website = 'https://github.com/zzhoujay/Markdown'
+//region jitpack
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.enbandari'
 
+// build a jar with source files
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
 }
+
+task javadoc(type: Javadoc) {
+    failOnError  false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+// build a jar with javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+//endregion
